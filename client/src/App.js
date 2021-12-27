@@ -1,73 +1,88 @@
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { v4 as uuidv4 } from 'uuid';
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import DataFetch from './fetchData';
 
-const backLogs = [
-  { id: uuidv4(), content: '1st Task' },
-  { id: uuidv4(), content: '2nd Task' }
-]
+const App = () => {
+  const backLogs = [
+    { id: uuidv4(), content: '1st Backlog'},
+    { id: uuidv4(), content: '2nd Backlog'},
+    { id: uuidv4(), content: '3rd Backlog'}
+  ]
+  
+  const toDos = [
+    { id: uuidv4(), content: '1st ToDo'},
+    { id: uuidv4(), content: '2nd ToDo'},
+    { id: uuidv4(), content: '3rd ToDo'}
+  ]
 
-const toDos = [
-  { id: uuidv4(), content: '1st ToDo'}
-]
-const columnsFromBack = {
-  [uuidv4()]: {
-    name: 'Backlogs',
-    items: backLogs
-  },
-  [uuidv4()]: {
-    name: 'ToDos',
-    items: toDos
-  },
-  [uuidv4()]: {
-    name: 'InProgress',
-    items: []
-  },
-  [uuidv4()]: {
-    name: 'Designed',
-    items: []
-  },
-}
-
-const onDragEnd = (result, columns, setColumns) => {
-  if(!result.destination) return
-  const { source, destination } = result
-  if(source.destination !== destination.droppableId){
-    const sourceColumn = columns[source.droppableId]
-    const destinationColumn = columns[destination.droppableId]
-    const sourceItems = [...sourceColumn.items]
-    const destinationItems = [...destinationColumn.items]
-    const [removed] = sourceItems.splice(source.index, 1)
-    destinationItems.splice(destination.index, 0, removed)
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...sourceColumn, 
-        items: sourceItems
-      },
-      [destination.droppableId]: {
-        ...destinationColumn,
-        items: destinationItems
-      }
-    })
-  } else {
-    const column = columns[source.droppableId]
-    const copiedItems = [...column.items]
-    const [removed] = copiedItems.splice(source.index, 1)
-    copiedItems.splice(destination.index, 0, removed )
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...column,
-        items: copiedItems
-      }
-     })
+  const getData = async () => {
+    const dataSet = await DataFetch('http://localhost:8080/api/backlogs')
+    console.log(dataSet.data)
+    // setBackLogs(dataSet.data)
   }
-}
 
-function App() {
+  useEffect(() => {
+    getData()
+  }, [])
+
+  const columnsFromBack = {
+    [uuidv4()]: {
+      name: 'Backlogs',
+      items: backLogs
+    },
+    [uuidv4()]: {
+      name: 'ToDos',
+      items: toDos
+    },
+    [uuidv4()]: {
+      name: 'InProgress',
+      items: []
+    },
+    [uuidv4()]: {
+      name: 'Designed',
+      items: []
+    },
+  }
+
   const [columns, setColumns] = useState(columnsFromBack)
-  return (
+  const onDragEnd = (result, columns, setColumns) => {
+    if(!result.destination) return
+    const { source, destination } = result
+    if(source.destination !== destination.droppableId){
+      const sourceColumn = columns[source.droppableId]
+      const destinationColumn = columns[destination.droppableId]
+      const sourceItems = [...sourceColumn.items]
+      const destinationItems = [...destinationColumn.items]
+      const [removed] = sourceItems.splice(source.index, 1)
+      destinationItems.splice(destination.index, 0, removed)
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...sourceColumn, 
+          items: sourceItems
+        },
+        [destination.droppableId]: {
+          ...destinationColumn,
+          items: destinationItems
+        }
+      })
+    } else {
+      const column = columns[source.droppableId]
+      const copiedItems = [...column.items]
+      const [removed] = copiedItems.splice(source.index, 1)
+      copiedItems.splice(destination.index, 0, removed )
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          items: copiedItems
+        }
+       })
+    }
+  }
+
+  return   (
     <div style={{display:'flex', justifyContent:'center', height:'100%'}}>
       <DragDropContext onDragEnd={result => onDragEnd(result, columns, setColumns)}>
         {Object.entries(columns).map(([id, column]) =>{
