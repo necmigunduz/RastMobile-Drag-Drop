@@ -4,27 +4,31 @@ import { useState, useEffect } from 'react'
 import DataFetch from './fetchData';
 
 const App = () => {
-  const backLogs = [
-    { id: uuidv4(), content: '1st Backlog'},
-    { id: uuidv4(), content: '2nd Backlog'},
-    { id: uuidv4(), content: '3rd Backlog'}
-  ]
-  
+  const [ backs, setBacks ] = useState()
   const toDos = [
     { id: uuidv4(), content: '1st ToDo'},
     { id: uuidv4(), content: '2nd ToDo'},
     { id: uuidv4(), content: '3rd ToDo'}
   ]
 
-  const getData = async () => {
-    const dataSet = await DataFetch('http://localhost:8080/api/backlogs')
-    console.log(dataSet.data)
-    // setBackLogs(dataSet.data)
-  }
+  const backLogs = [
+    { id: uuidv4(), content: '1st BackLog'},
+    { id: uuidv4(), content: '2nd BackLog'},
+    { id: uuidv4(), content: '3rd BackLog'},
+    { id: uuidv4(), content: '4th BackLog'},
+  ]
 
   useEffect(() => {
+    const getData = async () => {
+      const dataSet = await DataFetch('http://localhost:8080/api/backlogs')
+      const set = dataSet.data
+      setBacks(set)
+    }
     getData()
   }, [])
+
+  console.log(backs)
+  console.log(backLogs)
 
   const columnsFromBack = {
     [uuidv4()]: {
@@ -32,8 +36,8 @@ const App = () => {
       items: backLogs
     },
     [uuidv4()]: {
-      name: 'ToDos',
-      items: toDos
+      name: 'ToDos',  
+      items: []
     },
     [uuidv4()]: {
       name: 'InProgress',
